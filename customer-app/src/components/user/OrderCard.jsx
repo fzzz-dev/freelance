@@ -25,52 +25,60 @@ const OrderCard = ({ order }) => {
     }
   }
 
+  // Handle missing order data
+  if (!order) {
+    return null
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl shadow-soft p-6 hover:shadow-soft-lg transition-all"
+      className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-all"
     >
       {/* Order Header */}
       <div className="flex justify-between items-start mb-4">
         <div>
           <p className="text-sm text-gray-500">Order #{order.id}</p>
           <p className="text-sm text-gray-500">
-            Placed on {new Date(order.createdAt).toLocaleDateString()}
+            Placed on {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
           </p>
         </div>
         <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
           {getStatusIcon(order.status)}
-          <span className="capitalize">{order.status.replace('_', ' ')}</span>
+          <span className="capitalize">{order.status?.replace('_', ' ') || 'Unknown'}</span>
         </div>
       </div>
 
       {/* Order Items Preview */}
-      <div className="flex space-x-3 mb-4">
-        {order.items?.slice(0, 3).map((item, index) => (
-          <img
-            key={index}
-            src={item.image}
-            alt={item.title}
-            className="w-16 h-16 object-cover rounded-lg"
-          />
-        ))}
-        {order.items?.length > 3 && (
-          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-semibold text-gray-600">
-            +{order.items.length - 3}
-          </div>
-        )}
-      </div>
+      {order.items && order.items.length > 0 && (
+        <div className="flex space-x-3 mb-4">
+          {order.items.slice(0, 3).map((item, index) => (
+            <img
+              key={index}
+              src={item.image || 'https://picsum.photos/id/1/100/100'}
+              alt={item.title || item.name || 'Product'}
+              className="w-16 h-16 object-cover rounded-lg"
+              onError={(e) => { e.target.src = 'https://picsum.photos/id/1/100/100' }}
+            />
+          ))}
+          {order.items.length > 3 && (
+            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-semibold text-gray-600">
+              +{order.items.length - 3}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Order Summary */}
       <div className="flex justify-between items-center">
         <div>
-          <p className="text-sm text-gray-500">{order.items?.length} item(s)</p>
-          <p className="text-lg font-bold text-primary-600">${order.total?.toFixed(2)}</p>
+          <p className="text-sm text-gray-500">{order.items?.length || 0} item(s)</p>
+          <p className="text-lg font-bold text-blue-600">${(order.total || 0).toFixed(2)}</p>
         </div>
         <Link
           to={`/profile/orders/${order.id}`}
-          className="flex items-center space-x-1 text-primary-600 hover:text-primary-700 font-medium"
+          className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-medium"
         >
           <span>View Details</span>
           <FiEye className="w-4 h-4" />

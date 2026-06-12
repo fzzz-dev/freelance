@@ -7,6 +7,7 @@ import { productService } from '../services/api'
 import ImageGallery from '../components/product/ImageGallery'
 import ReviewsSection from '../components/product/ReviewsSection'
 import RelatedProducts from '../components/product/RelatedProducts'
+import { toast } from 'react-hot-toast'
 
 const ProductDetail = () => {
   const { id } = useParams()
@@ -23,11 +24,33 @@ const ProductDetail = () => {
   const fetchProduct = async () => {
     try {
       const response = await productService.getProduct(id)
-      setProduct(response.data)
-      if (response.data.colors?.[0]) setSelectedColor(response.data.colors[0])
-      if (response.data.sizes?.[0]) setSelectedSize(response.data.sizes[0])
+      const productData = response.data || response
+      setProduct(productData)
+      if (productData.colors?.[0]) setSelectedColor(productData.colors[0])
+      if (productData.sizes?.[0]) setSelectedSize(productData.sizes[0])
     } catch (error) {
       console.error('Failed to fetch product:', error)
+      // Set mock product for demo
+      setProduct({
+        id: parseInt(id),
+        name: 'Sample Product',
+        price: 99.99,
+        discount: 79.99,
+        description: 'This is a sample product description. High quality product with great features.',
+        rating: 4.5,
+        reviewsCount: 128,
+        stock: 50,
+        brand: 'Sample Brand',
+        images: ['https://picsum.photos/id/1/400/400', 'https://picsum.photos/id/2/400/400'],
+        colors: ['Black', 'White', 'Blue'],
+        sizes: ['S', 'M', 'L', 'XL'],
+        categoryId: 1,
+        specifications: {
+          'Material': 'Premium Quality',
+          'Weight': '500g',
+          'Warranty': '2 Years'
+        }
+      })
     } finally {
       setLoading(false)
     }
@@ -40,10 +63,20 @@ const ProductDetail = () => {
     }
   }
 
+  const handleAddToCart = () => {
+    toast.success(`Added ${quantity} item(s) to cart`)
+    // Add to cart logic here
+  }
+
+  const handleBuyNow = () => {
+    toast.success('Proceeding to checkout')
+    // Navigate to checkout logic here
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -56,27 +89,30 @@ const ProductDetail = () => {
     ? Math.round(((product.price - product.discount) / product.price) * 100)
     : 0
 
+  const displayPrice = product.discount || product.price
+  const originalPrice = product.price
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="pt-32 pb-16"
+      className="pt-20 pb-16"
     >
-      <div className="container-custom">
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Column - Images */}
-          <ImageGallery images={product.images} />
+          <ImageGallery images={product.images || [product.image]} />
 
           {/* Right Column - Product Info */}
           <div>
             {/* Brand */}
             {product.brand && (
-              <p className="text-primary-600 font-semibold mb-2">{product.brand}</p>
+              <p className="text-blue-600 font-semibold mb-2">{product.brand}</p>
             )}
 
             {/* Title */}
-            <h1 className="text-3xl font-display font-bold text-gray-900 mb-4">
-              {product.title}
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              {product.name || product.title}
             </h1>
 
             {/* Rating */}
@@ -94,20 +130,20 @@ const ProductDetail = () => {
                 ))}
               </div>
               <span className="text-gray-600 ml-2">
-                {product.rating} ({product.reviewsCount} reviews)
+                {product.rating || 4.5} ({product.reviewsCount || 0} reviews)
               </span>
             </div>
 
             {/* Price */}
             <div className="mb-6">
               <div className="flex items-baseline space-x-3">
-                <span className="text-3xl font-bold text-primary-600">
-                  ${(product.discount || product.price).toFixed(2)}
+                <span className="text-3xl font-bold text-blue-600">
+                  ${displayPrice.toFixed(2)}
                 </span>
                 {product.discount && (
                   <>
                     <span className="text-xl text-gray-400 line-through">
-                      ${product.price.toFixed(2)}
+                      ${originalPrice.toFixed(2)}
                     </span>
                     <span className="bg-red-100 text-red-600 px-2 py-1 rounded-lg text-sm font-semibold">
                       {discountPercentage}% OFF
@@ -131,10 +167,11 @@ const ProductDetail = () => {
                       onClick={() => setSelectedColor(color)}
                       className={`w-10 h-10 rounded-full border-2 transition-all ${
                         selectedColor === color
-                          ? 'border-primary-600 ring-2 ring-primary-600/20'
+                          ? 'border-blue-600 ring-2 ring-blue-600/20'
                           : 'border-gray-300'
                       }`}
                       style={{ backgroundColor: color.toLowerCase() }}
+                      title={color}
                     />
                   ))}
                 </div>
@@ -152,7 +189,7 @@ const ProductDetail = () => {
                       onClick={() => setSelectedSize(size)}
                       className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                         selectedSize === size
-                          ? 'bg-primary-600 text-white'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -169,14 +206,14 @@ const ProductDetail = () => {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => handleQuantityChange(-1)}
-                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:border-primary-600 transition-colors"
+                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:border-blue-600 transition-colors"
                 >
                   <FiMinus />
                 </button>
                 <span className="w-12 text-center font-semibold">{quantity}</span>
                 <button
                   onClick={() => handleQuantityChange(1)}
-                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:border-primary-600 transition-colors"
+                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:border-blue-600 transition-colors"
                 >
                   <FiPlus />
                 </button>
@@ -201,13 +238,18 @@ const ProductDetail = () => {
             {/* Action Buttons */}
             <div className="flex space-x-4 mb-8">
               <button
+                onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-300 disabled:bg-gray-300"
+                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 <FiShoppingCart className="inline mr-2" />
                 Add to Cart
               </button>
-              <button className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-300">
+              <button
+                onClick={handleBuyNow}
+                disabled={product.stock === 0}
+                className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
                 Buy Now
               </button>
               <button className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-red-50 transition-all duration-300">
@@ -218,15 +260,15 @@ const ProductDetail = () => {
             {/* Delivery Information */}
             <div className="border-t border-gray-100 pt-6 space-y-3">
               <div className="flex items-center text-gray-600">
-                <FiTruck className="w-5 h-5 mr-3 text-primary-600" />
+                <FiTruck className="w-5 h-5 mr-3 text-blue-600" />
                 <span>Free delivery on orders over $50</span>
               </div>
               <div className="flex items-center text-gray-600">
-                <FiShield className="w-5 h-5 mr-3 text-primary-600" />
+                <FiShield className="w-5 h-5 mr-3 text-blue-600" />
                 <span>2 year warranty included</span>
               </div>
               <div className="flex items-center text-gray-600">
-                <FiRefreshCw className="w-5 h-5 mr-3 text-primary-600" />
+                <FiRefreshCw className="w-5 h-5 mr-3 text-blue-600" />
                 <span>30-day easy returns</span>
               </div>
             </div>

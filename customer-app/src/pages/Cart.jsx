@@ -9,14 +9,18 @@ import PriceSummary from '../components/cart/PriceSummary'
 const Cart = () => {
   const { cart, updateQuantity, removeItem } = useContext(CartContext)
 
-  if (!cart.items || cart.items.length === 0) {
+  // Safe check for cart and items
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
-      <div className="min-h-screen pt-32 flex items-center justify-center">
+      <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
           <FiShoppingCart className="w-24 h-24 text-gray-300 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Your cart is empty</h2>
           <p className="text-gray-500 mb-6">Looks like you haven't added any items yet</p>
-          <Link to="/" className="btn-primary inline-block">
+          <Link 
+            to="/" 
+            className="inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all"
+          >
             Continue Shopping
           </Link>
         </div>
@@ -28,10 +32,10 @@ const Cart = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen pt-32 pb-16"
+      className="min-h-screen pt-20 pb-16"
     >
-      <div className="container-custom">
-        <h1 className="text-3xl font-display font-bold mb-8">Shopping Cart</h1>
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
@@ -43,23 +47,24 @@ const Cart = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="bg-white rounded-2xl shadow-soft p-4"
+                className="bg-white rounded-2xl shadow-md p-4"
               >
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Product Image */}
                   <Link to={`/product/${item.productId}`} className="flex-shrink-0">
                     <img
-                      src={item.image || '/api/placeholder/120/120'}
-                      alt={item.title}
+                      src={item.image || 'https://picsum.photos/id/1/120/120'}
+                      alt={item.title || 'Product'}
                       className="w-32 h-32 object-cover rounded-lg"
+                      onError={(e) => { e.target.src = 'https://picsum.photos/id/1/120/120' }}
                     />
                   </Link>
 
                   {/* Product Info */}
                   <div className="flex-grow">
                     <Link to={`/product/${item.productId}`}>
-                      <h3 className="font-semibold text-gray-800 hover:text-primary-600 mb-1">
-                        {item.title}
+                      <h3 className="font-semibold text-gray-800 hover:text-blue-600 mb-1">
+                        {item.title || item.name}
                       </h3>
                     </Link>
                     {item.brand && (
@@ -76,8 +81,8 @@ const Cart = () => {
 
                     {/* Price */}
                     <div className="flex items-baseline space-x-2 mt-2">
-                      <span className="text-lg font-bold text-primary-600">
-                        ${item.price.toFixed(2)}
+                      <span className="text-lg font-bold text-blue-600">
+                        ${(item.price || 0).toFixed(2)}
                       </span>
                       {item.originalPrice && (
                         <span className="text-sm text-gray-400 line-through">
@@ -91,25 +96,25 @@ const Cart = () => {
                   <div className="flex flex-col justify-between items-end">
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:border-primary-600"
+                        onClick={() => updateQuantity && updateQuantity(item.id, item.quantity - 1)}
+                        className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:border-blue-600 transition-colors"
                       >
                         -
                       </button>
-                      <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                      <span className="w-12 text-center font-semibold">{item.quantity || 0}</span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:border-primary-600"
+                        onClick={() => updateQuantity && updateQuantity(item.id, item.quantity + 1)}
+                        className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:border-blue-600 transition-colors"
                       >
                         +
                       </button>
                     </div>
                     <div className="flex space-x-2 mt-4">
-                      <button className="text-gray-400 hover:text-primary-600 transition-colors">
+                      <button className="text-gray-400 hover:text-blue-600 transition-colors">
                         <FiHeart className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem && removeItem(item.id)}
                         className="text-gray-400 hover:text-red-600 transition-colors"
                       >
                         <FiTrash2 className="w-5 h-5" />
@@ -126,7 +131,7 @@ const Cart = () => {
             <PriceSummary />
             <Link
               to="/checkout"
-              className="btn-primary w-full text-center inline-block mt-4"
+              className="block bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all text-center mt-4"
             >
               Proceed to Checkout
               <FiChevronRight className="inline ml-2" />

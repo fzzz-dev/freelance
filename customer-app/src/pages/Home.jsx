@@ -22,18 +22,18 @@ const Home = () => {
   const fetchHomeData = async () => {
     try {
       const [featured, trending, newArrivalsData, flashSalesData, recommended] = await Promise.all([
-        productService.getProducts({ featured: true, limit: 8 }),
+        productService.getFeatured(),
         productService.getTrending(),
         productService.getNewArrivals(),
         productService.getFlashSales(),
         productService.getRecommended(),
       ])
       
-      setFeaturedProducts(featured.data)
-      setTrendingProducts(trending.data)
-      setNewArrivals(newArrivalsData.data)
-      setFlashSales(flashSalesData.data)
-      setRecommendedProducts(recommended.data)
+      setFeaturedProducts(featured.data || featured)
+      setTrendingProducts(trending.data || trending)
+      setNewArrivals(newArrivalsData.data || newArrivalsData)
+      setFlashSales(flashSalesData.data || flashSalesData)
+      setRecommendedProducts(recommended.data || recommended)
     } catch (error) {
       console.error('Failed to fetch home data:', error)
     } finally {
@@ -42,7 +42,7 @@ const Home = () => {
   }
 
   const handleProductClick = (productId) => {
-    navigate(/product/)
+    navigate(`/product/${productId}`)
   }
 
   const handleShopNow = () => {
@@ -52,7 +52,7 @@ const Home = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -62,12 +62,10 @@ const Home = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen pt-32"
+      className="min-h-screen pt-20 lg:pt-24"
     >
-      {/* Hero Banner */}
       <HeroBanner />
 
-      {/* Flash Sales Section */}
       {flashSales.length > 0 && (
         <ProductSection
           title="Flash Sales"
@@ -80,10 +78,8 @@ const Home = () => {
         />
       )}
 
-      {/* Categories Section */}
       <CategorySlider />
 
-      {/* Featured Products */}
       {featuredProducts.length > 0 && (
         <ProductSection
           title="Featured Products"
@@ -94,7 +90,6 @@ const Home = () => {
         />
       )}
 
-      {/* Trending Products */}
       {trendingProducts.length > 0 && (
         <ProductSection
           title="Trending Now"
@@ -105,7 +100,6 @@ const Home = () => {
         />
       )}
 
-      {/* New Arrivals */}
       {newArrivals.length > 0 && (
         <ProductSection
           title="New Arrivals"
@@ -116,7 +110,6 @@ const Home = () => {
         />
       )}
 
-      {/* Recommended for You */}
       {recommendedProducts.length > 0 && (
         <ProductSection
           title="Recommended for You"
@@ -126,14 +119,13 @@ const Home = () => {
         />
       )}
 
-      {/* Offer Banner */}
-      <div className="container-custom my-12">
-        <div className="bg-gradient-to-r from-accent-500 to-primary-600 rounded-2xl p-8 text-white text-center">
+      <div className="container mx-auto px-4 my-12">
+        <div className="bg-gradient-to-r from-orange-500 to-purple-600 rounded-2xl p-8 text-white text-center">
           <h2 className="text-3xl font-bold mb-2">Special Offer</h2>
           <p className="text-lg mb-4">Get up to 50% off on selected items</p>
           <button 
             onClick={handleShopNow}
-            className="bg-white text-primary-600 px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all"
+            className="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all"
           >
             Shop Now
           </button>

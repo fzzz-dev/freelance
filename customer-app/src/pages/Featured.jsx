@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { productService } from '../services/api'
+import { productService } from '../services/productService'
 import ProductCard from '../components/common/ProductCard'
 import { FiArrowLeft } from 'react-icons/fi'
 
@@ -13,8 +13,9 @@ const Featured = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await productService.getProducts({ featured: true, limit: 50 })
-        setProducts(response.data)
+        // FIXED: Use getFeatured() method instead of getProducts()
+        const response = await productService.getFeatured()
+        setProducts(response.data || response)
       } catch (error) {
         console.error('Failed to fetch featured products:', error)
       } finally {
@@ -33,7 +34,7 @@ const Featured = () => {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen pt-32 container-custom">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen pt-32 container mx-auto px-4">
       <button onClick={() => navigate(-1)} className="flex items-center space-x-2 text-gray-600 hover:text-primary-600 mb-6">
         <FiArrowLeft /> <span>Back</span>
       </button>
@@ -44,7 +45,7 @@ const Featured = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
-            <div key={product.id} onClick={() => navigate(/product/)} className="cursor-pointer">
+            <div key={product.id} onClick={() => navigate(`/product/${product.id}`)} className="cursor-pointer">
               <ProductCard product={product} />
             </div>
           ))}
